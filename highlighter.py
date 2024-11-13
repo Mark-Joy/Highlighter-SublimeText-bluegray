@@ -16,7 +16,6 @@ DEFAULT_DELAY = 3000
 DEFAULT_SYNTAX_IGNORE = []
 SETTINGS_FILE = 'highlighter.sublime-settings'
 
-
 class Preferences:
     def load(self, settings):
         self.enabled = bool(settings.get('highlighter_enabled', DEFAULT_IS_ENABLED))
@@ -35,17 +34,27 @@ class Preferences:
 
 Pref = Preferences()
 
-
+# Override/Force highlighter_enabled option that read from settings file
 class HighlighterToggleCommand(sublime_plugin.WindowCommand):
     def run(self):
         view = self.window.active_view()
         settings = view.settings()
-        enabled = bool(settings.get('highlighter_enabled', DEFAULT_IS_ENABLED))
-        settings.set('highlighter_enabled', not(enabled))
-        sublime.status_message("Toggle Highlighter: " + str(not(enabled)))
+        enabled = settings.get('highlighter_enabled')
+        if enabled == Pref.enabled:
+            settings.set('highlighter_enabled', None)
+            sublime.status_message("Force Highlighter: None")
+        elif enabled is None:
+            enabled = not Pref.enabled
+            settings.set('highlighter_enabled', enabled)
+            sublime.status_message("Force Highlighter: " + str(enabled))
+        else:
+            enabled = not enabled
+            settings.set('highlighter_enabled', enabled)
+            sublime.status_message("Force Highlighter: " + str(enabled))
+
         highlighter(view)
         if Pref.save_settings_on_change:
-            Pref.settings.set('highlighter_enabled', not(enabled))
+            Pref.settings.set('highlighter_enabled', enabled)
             Pref.save()
 
     def is_checked(self):
@@ -58,6 +67,9 @@ def plugin_loaded():
     settings = sublime.load_settings(SETTINGS_FILE)
     Pref.load(settings)
     settings.add_on_change('reload', lambda: Pref.load(settings))
+    for w in sublime.windows():
+        for v in w.views():
+            v.settings().erase('prev_highlighter_enabled')
 
 
 # Determine if the view is a find results view.
@@ -93,7 +105,10 @@ def find_regexes_cool(view):
 def highlighter(view):
     if view.size() <= Pref.max_size and not ignore_view(view) and not is_find_results(view):
 
-        if view.settings().get('highlighter_enabled'):
+        # print('highlighter: ', view.file_name())
+        # Before view.settings().set() was called in [HighlighterToggleCommand], [enabled] is None
+        enabled = view.settings().get('highlighter_enabled')
+        if enabled or (enabled is None and Pref.enabled):
             scope = Pref.color_scope_name
             scope_cool = Pref.color_scope_name_cool
         else:
@@ -119,15 +134,17 @@ class HighlighterListener(sublime_plugin.EventListener):
         self.pending = self.pending - 1
         if self.pending > 0:
             return
-        highlighter(view)
+        if Pref.enabled:
+            highlighter(view)
 
     def on_activated(self, view):
-        if Pref.enabled:
+        settings = view.settings()
+        prev_enabled = settings.get('prev_highlighter_enabled')
+        # prev_highlighter_enabled: previous [highlighter_enabled option read from settings file]
+        # print('prev_enabled: {} -- Pref.enabled: {} -- File: {}'.format(prev_enabled, Pref.enabled, view.file_name()))
+        if prev_enabled is None or prev_enabled != Pref.enabled:
             highlighter(view)
-
-    def on_load(self, view):
-        if Pref.enabled:
-            highlighter(view)
+        settings.set('prev_highlighter_enabled', Pref.enabled)
 
 # ST2 backwards compatibility
 if int(sublime.version()) < 3000:
