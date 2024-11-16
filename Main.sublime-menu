@@ -1,78 +1,42 @@
-[{
-	"id": "view",
-	"children":
-	[
-		{"caption": "Toggle Highlighter",
-		"command": "highlighter_toggle",
-	"checkbox": true}
-]
-},
-{
-	"id": "preferences",
-	"children":
-	[
-	{
-		"caption": "Package Settings",
-		"mnemonic": "P",
-		"id": "package-settings",
-		"children":
-		[
-		{
-			"caption": "Highlighter",
-			"children":
-			[
-			{
-				"command": "open_file",
-				"args": {
-					"file": "${packages}/Highlighter/highlighter.sublime-settings",
-					"platform": "Windows"
-				},
-				"caption": "Settings - Default"
-			},
-			{
-				"command": "open_file",
-				"args": {
-					"file": "${packages}/Highlighter/highlighter.sublime-settings",
-					"platform": "OSX"
-				},
-				"caption": "Settings - Default"
-			},
-			{
-				"command": "open_file",
-				"args": {
-					"file": "${packages}/Highlighter/highlighter.sublime-settings",
-					"platform": "Linux"
-				},
-				"caption": "Settings - Default"
-			},
-			{
-				"command": "open_file",
-				"args": {
-					"file": "${packages}/User/highlighter.sublime-settings",
-					"platform": "Windows"
-				},
-				"caption": "Settings - User"
-			},
-			{
-				"command": "open_file",
-				"args": {
-					"file": "${packages}/User/highlighter.sublime-settings",
-					"platform": "OSX"
-				},
-				"caption": "Settings - User"
-			},
-			{
-				"command": "open_file",
-				"args": {
-					"file": "${packages}/User/highlighter.sublime-settings",
-					"platform": "Linux"
-				},
-				"caption": "Settings - User"
-			}
-			]
-		}
-		]
-	}
-	]
-}
+[
+  {
+    "caption": "Preferences",
+    "mnemonic": "n",
+    "id": "preferences",
+    "children":
+    [
+      {
+        "caption": "Package Settings",
+        "mnemonic": "P",
+        "id": "package-settings",
+        "children":
+        [
+          {
+            "caption": "Highlighter",
+            "children":
+            [
+              {
+                "caption": "Key Bindings",
+                "command": "edit_settings",
+                "args": {
+                  "base_file": "${packages}/Highlighter/Default ($platform).sublime-keymap",
+                  "user_file": "${packages}/User/Default ($platform).sublime-keymap",
+                  "default": "[\n\t$0\n]\n"
+                }
+              },
+              {
+                "caption": "Settings",
+                "command": "edit_settings",
+                "args": {
+                  "base_file": "${packages}/Highlighter/highlighter.sublime-settings",
+                  "user_file": "${packages}/User/highlighter.sublime-settings",
+                  "default": "[\n\t$0\n]\n"
+                }
+              },
+            ]
+          }
+        ]
+      }
+    ]
+  }
 ]
